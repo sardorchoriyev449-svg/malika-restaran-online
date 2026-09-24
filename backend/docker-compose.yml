@@ -1,0 +1,50 @@
+services:
+  mongo:
+    image: mongo:6.0
+    container_name: library-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - library_network
+    restart: always
+
+  redis:
+    image: redis:7-alpine
+    container_name: library-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - library_network
+    restart: always
+
+  app:
+    build:
+      context: .
+      dockerfile: DockerFile
+    container_name: library-app
+    env_file:
+      - .env
+    ports:
+      - "4001:4000"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_URL=${REDIS_URL}
+      - TELEGRAM_BOT_SECRET_KEY=${TELEGRAM_BOT_SECRET_KEY}
+    depends_on:
+      - mongo
+      - redis
+    volumes:
+      - ./public/uploads:/app/public/uploads
+    networks:
+      - library_network
+    restart: always
+
+networks:
+  library_network:
+    driver: bridge
+
+volumes:
+  mongo_data:

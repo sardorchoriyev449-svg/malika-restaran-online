@@ -1,0 +1,1 @@
+export const dbConnect = (): string => process.env.MONGO_URL as string;
